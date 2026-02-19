@@ -29,3 +29,42 @@ class TestDfsEdges(unittest.TestCase):
         edges = rustworkx.digraph_dfs_edges(graph, 0)
         expected = [(0, 1), (1, 2), (2, 4), (1, 3)]
         self.assertEqual(expected, edges)
+
+    def test_digraph_dfs_edges_empty(self):
+        graph = rustworkx.PyDiGraph()
+        edges = rustworkx.digraph_dfs_edges(graph)
+        self.assertEqual([], edges)
+
+    def test_digraph_dfs_edges_single_node(self):
+        graph = rustworkx.PyDiGraph()
+        graph.add_node(None)
+        edges = rustworkx.digraph_dfs_edges(graph, 0)
+        self.assertEqual([], edges)
+
+    def test_digraph_dfs_edges_node_gaps(self):
+        graph = rustworkx.PyDiGraph()
+        graph.add_nodes_from(range(5))
+        graph.add_edge(0, 2, None)
+        graph.add_edge(2, 4, None)
+        graph.remove_node(1)
+        graph.remove_node(3)
+        edges = rustworkx.digraph_dfs_edges(graph, 0)
+        self.assertEqual([(0, 2), (2, 4)], edges)
+
+    def test_digraph_dfs_edges_star(self):
+        graph = rustworkx.PyDiGraph()
+        hub = graph.add_node(None)
+        spokes = []
+        for _ in range(100):
+            spoke = graph.add_node(None)
+            graph.add_edge(hub, spoke, None)
+            spokes.append(spoke)
+        edges = rustworkx.digraph_dfs_edges(graph, hub)
+        # Should visit all spokes exactly once
+        self.assertEqual(len(edges), 100)
+        # All edges should originate from hub
+        for src, _ in edges:
+            self.assertEqual(src, hub)
+        # All spokes should be visited
+        visited = {tgt for _, tgt in edges}
+        self.assertEqual(visited, set(spokes))
