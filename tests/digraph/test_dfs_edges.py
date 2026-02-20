@@ -36,8 +36,7 @@ class TestDfsEdges(unittest.TestCase):
         self.assertEqual([], edges)
 
     def test_digraph_dfs_edges_single_node(self):
-        graph = rustworkx.PyDiGraph()
-        graph.add_node(None)
+        graph = rustworkx.generators.directed_empty_graph(1)
         edges = rustworkx.digraph_dfs_edges(graph, 0)
         self.assertEqual([], edges)
 
@@ -52,13 +51,9 @@ class TestDfsEdges(unittest.TestCase):
         self.assertEqual([(0, 2), (2, 4)], edges)
 
     def test_digraph_dfs_edges_star(self):
-        graph = rustworkx.PyDiGraph()
-        hub = graph.add_node(None)
-        spokes = []
-        for _ in range(100):
-            spoke = graph.add_node(None)
-            graph.add_edge(hub, spoke, None)
-            spokes.append(spoke)
+        graph = rustworkx.generators.directed_star_graph(101)
+        hub = 0
+        spokes = list(range(1, 101))
         edges = rustworkx.digraph_dfs_edges(graph, hub)
         # Should visit all spokes exactly once
         self.assertEqual(len(edges), 100)
